@@ -2,6 +2,6 @@ package entity
 
 type Student struct {
 	ID        int    `json:"id"`
-	FirstName string `json:"firstname"`
-	LastName  string `json:"lastname"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
 }

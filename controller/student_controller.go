@@ -14,9 +14,7 @@ type StudentController struct {
 }
 
 var (
-	students = map[int]*entity.Student{}
-	seq      = 1
-	lock     = sync.Mutex{}
+	lock = sync.Mutex{}
 )
 
 //----------
@@ -32,58 +30,65 @@ func (r StudentController) GetAllStudents(c echo.Context) error {
 func (r StudentController) GetStudent(c echo.Context) error {
 	lock.Lock()
 	defer lock.Unlock()
+	u := new(entity.Student)
+	if err := c.Bind(u); err != nil {
+		return err
+	}
 	id, _ := strconv.Atoi(c.Param("id"))
-	return c.JSON(http.StatusOK, students[id])
+	res, s := r.StudentRepository.GetStudent(id)
+	if s == nil {
+		return c.JSON(http.StatusNotFound, res)
+	}
+	return c.JSON(http.StatusOK, s)
 }
 
 func (r StudentController) Create(c echo.Context) error {
 	lock.Lock()
 	defer lock.Unlock()
-	u := &entity.Student{
-		ID: seq,
-	}
+	u := &entity.Student{}
 	if err := c.Bind(u); err != nil {
 		return err
 	}
-	students[u.ID] = u
-	seq++
-	return c.JSON(http.StatusCreated, u)
+
+	return c.JSON(http.StatusCreated, r.StudentRepository.Create(u))
 }
 
 func (r StudentController) UpdateStudent(c echo.Context) error {
 	lock.Lock()
 	defer lock.Unlock()
+	id, _ := strconv.Atoi(c.Param("id"))
 	u := new(entity.Student)
 	if err := c.Bind(u); err != nil {
 		return err
 	}
-	id, _ := strconv.Atoi(c.Param("id"))
-	students[id].FirstName = u.FirstName
-	students[id].LastName = u.LastName
-	return c.JSON(http.StatusOK, students[id])
+	res, s := r.StudentRepository.Update(id, u)
+	if s == nil {
+		return c.JSON(http.StatusNotFound, res)
+	}
+	return c.JSON(http.StatusOK, s)
 }
 
 func (r StudentController) PatchStudent(c echo.Context) error {
 	lock.Lock()
 	defer lock.Unlock()
+	id, _ := strconv.Atoi(c.Param("id"))
 	u := new(entity.Student)
 	if err := c.Bind(u); err != nil {
 		return err
 	}
-	id, _ := strconv.Atoi(c.Param("id"))
-	if u.FirstName != "" {
-		students[id].FirstName = u.FirstName
+	res, s := r.StudentRepository.Patch(id, u)
+	if s == nil {
+		return c.JSON(http.StatusNotFound, res)
 	}
-	if u.LastName != "" {
-		students[id].LastName = u.LastName
-	}
-	return c.JSON(http.StatusOK, students[id])
+	return c.JSON(http.StatusOK, s)
 }
 
 func (r StudentController) DeleteStudent(c echo.Context) error {
 	lock.Lock()
 	defer lock.Unlock()
 	id, _ := strconv.Atoi(c.Param("id"))
-	delete(students, id)
-	return c.NoContent(http.StatusNoContent)
+	if r.StudentRepository.Delete(id) == "deleted successfully" {
+		return c.JSON(http.StatusAccepted, "deleted successfully")
+	}
+	return c.JSON(http.StatusNotFound, "student not found")
 }
