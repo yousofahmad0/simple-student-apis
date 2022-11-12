@@ -32,7 +32,7 @@ func main() {
 		},
 	}
 	e.GET("/students", studentController.GetAllStudents)
-	e.POST("/create_students", studentController.Create)
+	e.POST("/students", studentController.Create)
 	e.GET("/students/:id", studentController.GetStudent)
 	e.PUT("/students/:id", studentController.UpdateStudent)
 	e.PATCH("/students/:id", studentController.PatchStudent)
