@@ -6,9 +6,11 @@ import (
 	"strconv"
 	"sync"
 	"task_2/entity"
+	"task_2/repository"
 )
 
 type StudentController struct {
+	StudentRepository repository.StudentRepository
 }
 
 var (
@@ -21,20 +23,20 @@ var (
 // Handlers
 //----------
 
-func (receiver StudentController) GetAllStudents(c echo.Context) error {
+func (r StudentController) GetAllStudents(c echo.Context) error {
 	lock.Lock()
 	defer lock.Unlock()
-	return c.JSON(http.StatusOK, students)
+	return c.JSON(http.StatusOK, r.StudentRepository.GetAll())
 }
 
-func (receiver StudentController) GetStudent(c echo.Context) error {
+func (r StudentController) GetStudent(c echo.Context) error {
 	lock.Lock()
 	defer lock.Unlock()
 	id, _ := strconv.Atoi(c.Param("id"))
 	return c.JSON(http.StatusOK, students[id])
 }
 
-func (receiver StudentController) Create(c echo.Context) error {
+func (r StudentController) Create(c echo.Context) error {
 	lock.Lock()
 	defer lock.Unlock()
 	u := &entity.Student{
@@ -48,7 +50,7 @@ func (receiver StudentController) Create(c echo.Context) error {
 	return c.JSON(http.StatusCreated, u)
 }
 
-func (receiver StudentController) UpdateStudent(c echo.Context) error {
+func (r StudentController) UpdateStudent(c echo.Context) error {
 	lock.Lock()
 	defer lock.Unlock()
 	u := new(entity.Student)
@@ -61,7 +63,7 @@ func (receiver StudentController) UpdateStudent(c echo.Context) error {
 	return c.JSON(http.StatusOK, students[id])
 }
 
-func (receiver StudentController) PatchStudent(c echo.Context) error {
+func (r StudentController) PatchStudent(c echo.Context) error {
 	lock.Lock()
 	defer lock.Unlock()
 	u := new(entity.Student)
@@ -78,7 +80,7 @@ func (receiver StudentController) PatchStudent(c echo.Context) error {
 	return c.JSON(http.StatusOK, students[id])
 }
 
-func (receiver StudentController) DeleteStudent(c echo.Context) error {
+func (r StudentController) DeleteStudent(c echo.Context) error {
 	lock.Lock()
 	defer lock.Unlock()
 	id, _ := strconv.Atoi(c.Param("id"))
